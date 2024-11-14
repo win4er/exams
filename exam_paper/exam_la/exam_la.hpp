@@ -3,6 +3,7 @@
 
 #include "../../matrix/matrix.hpp"
 #include <cstdio>
+#include <string>
 
 
 class EXAM_LA {
