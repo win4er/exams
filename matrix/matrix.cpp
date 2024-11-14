@@ -53,7 +53,7 @@ Matrix::Matrix(const Matrix& M) {
 		for (int iter_c=0; iter_c < col_n; ++iter_c) {
 			row[iter_c] = M.matrix[iter_r][iter_c];
 		}
-		matrix[iter_r] = row;
+	matrix[iter_r] = row;
 	}
 }
 
@@ -193,12 +193,12 @@ Matrix& Matrix::operator=(const Matrix& m) {
 	if (this != &m) {
 		return *this;
 	}
-	
+
 	for (int iter_r=0; iter_r < row_n; ++iter_r) {
 		delete [] matrix[iter_r];
 	}
 	delete []  matrix;
-	
+
 	row_n = m.row_n;
 	col_n = m.col_n;
 	matrix = new double*[row_n];
