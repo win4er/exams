@@ -1,0 +1,14 @@
+all : main.o exam_la.o matrix.o
+	g++ -o exam_la main.o exam_la.o matrix.o
+
+main.o : main.cpp
+	g++ -c -g main.cpp
+
+exam_la.o : exam_la.cpp
+	g++ -c exam_la.cpp
+
+matrix.o : ../../matrix/matrix.cpp
+	g++ -c ../../matrix/matrix.cpp
+
+clean :
+	rm -rf *.o exam_la
