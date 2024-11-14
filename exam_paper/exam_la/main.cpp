@@ -8,6 +8,6 @@ int main() {
     double (*ptr)[] = arr;
     Matrix M(ptr, 2, 2);
     M.print();
-    std::cout << M.RDet() << std::endl;
+    printf("%f", M.RDet());
     return 0;
 }

@@ -2,6 +2,8 @@
 #define EXAM_LA_HPP
 
 #include "../../matrix/matrix.hpp"
+#include <cstdio>
+
 
 class EXAM_LA {
     //private:

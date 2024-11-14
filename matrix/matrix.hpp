@@ -1,9 +1,9 @@
 #ifndef MATRIX_HPP
 #define MATRIX_HPP
 
-#include<stdlib.h>
-#include<assert.h>
-#include<math.h>
+#include <cstdio>
+#include <assert.h>
+#include <math.h>
 
 class Matrix {
 	private:
