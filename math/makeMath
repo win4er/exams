@@ -1,0 +1,11 @@
+all : main.o math.o
+	g++ main.o math.o -o math
+
+main.o : main.cpp
+	g++ -g -c main.cpp
+
+math.o : math.cpp
+	g++ -g -c math.cpp
+
+clean : 
+	rm -rf *.o math
