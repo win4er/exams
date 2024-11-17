@@ -19,7 +19,7 @@ int main() {
 	double (*ptr1)[] = array1;
 	double (*ptr2)[] = array2;
 
-/*	int n4 = 4;
+	int n4 = 4;
 	int temp = 16;
 	double array[n4][n4] = {{0}};
 	for (int row=0; row < n4; ++row) {
@@ -27,22 +27,14 @@ int main() {
 			array[row][column] = temp--;
 		}
 	}
-	Matrix M(n4, array);
-	M.printM();
+	double (*ptr3)[] = array;
+	Matrix M(ptr3, 4, 4);
+	M.print();
+	printf("Det M: %f\n", M.RDet());
+	M.T();
+	M.print();
+	printf("Det M: %f\n", M.RDet());
 
-//	std::cout << M.RDet() << std::endl;
-	std::cout << M.DetG() << std::endl;
-*/	
-	Matrix M1(ptr1, 3, 3);
-	M1.T();
-	M1.print();
-	std::cout << '\n';
-	Matrix M2(ptr2, 3, 3);
-	M2.print();
-	std::cout << '\n';
 
-	Matrix Multiplicated = M1 * M2;
-	Multiplicated.print();
-	printf("Determinant:%f\n", Multiplicated.DetG());
 	return 0; 
 }

@@ -19,6 +19,7 @@ Matrix::Matrix(double (*arr)[], int row_inp, int col_inp) {
 
 Matrix::Matrix(const Matrix& M, int wipe_row, int wipe_col) {
 	assert((wipe_row < M.row_n) && (wipe_col < M.col_n));
+	
 	row_n = M.row_n-1;
 	col_n = M.col_n-1;
 	matrix = new double*[row_n];
@@ -124,14 +125,13 @@ double Matrix::DetG() {
 
 double Matrix::Minor(const Matrix& M) {
 	assert(row_n == col_n);
-	int n = row_n;
-	int N = M.row_n;
+	int n = M.row_n;
 	double result = 0.0;
-	if (N==1) {
+	if (n==1) {
 		result = M.matrix[0][0];
 		return result;
 	}
-	if (N==2) {
+	if (n==2) {
 		result = M.matrix[0][0] * M.matrix[1][1] - M.matrix[1][0] * M.matrix[0][1];
 		return result;
 	}
