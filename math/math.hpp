@@ -9,10 +9,14 @@
 struct Func_Data {
     public:
         int size;
+        int func_expr_size;
+        int degree_expr_size;
+        int param_expr_size;
+        int operations_size;
         std::string* func_expr;
         std::string* degree_expr;
         std::string* param_expr;
-        std::string* operations; //operations between 2 or more funcs(only '*' and '/')
+        char* operations; //operations between 2 or more funcs(only '*' and '/')
         Func_Data();
         Func_Data(const std::string& f_expr, const std::string& d_expr, const  std::string& p_expr);
         ~Func_Data();

@@ -2,6 +2,10 @@
 
 Func_Data::Func_Data() {
     size = 0;
+    func_expr_size = 0;
+    degree_expr_size = 0;
+    param_expr_size = 0;
+    operations_size = 0;
     func_expr = nullptr;
     degree_expr = nullptr;
     param_expr = nullptr;
@@ -10,14 +14,23 @@ Func_Data::Func_Data() {
 
 Func_Data::Func_Data(const std::string& f_expr, const std::string& d_expr, const std::string& p_expr) {
     size = 1;
-    func_expr = new std::string[size];
-    degree_expr = new std::string[size];
-    param_expr = new std::string[size];
-    operations = new std::string[size];
+    func_expr_size = 1;
+    degree_expr_size = 1;
+    param_expr_size = 1;
+    operations_size = 1;
+    func_expr = new std::string[func_expr_size];
+    degree_expr = new std::string[degree_expr_size];
+    param_expr = new std::string[param_expr_size];
+    operations = new char[operations_size];
+    operations[size-1] = '0'; //fist operation means nothing
 }
 
 Func_Data::~Func_Data() {
     size = 0;
+    func_expr_size = 0;
+    degree_expr_size = 0;
+    param_expr_size = 0;
+    operations_size = 0;
     delete [] func_expr;
     delete [] degree_expr;
     delete [] param_expr;
@@ -30,59 +43,161 @@ bool Func_Data::insert_data(const std::string& expression, int index) {
     switch (index) {
         case (0): {
             if (func_expr == nullptr) {
-                size = 1;
+                assert((size==0)||(size==1));
                 delete [] func_expr;
+                size = 1;
                 func_expr = new std::string[size];
-                func_expr[size-1] = expression;
+                func_expr[0] = expression;
+                func_expr_size = 1;
                 break;
             } else {
-                std::string* new_func_expr = new std::string[size+1];
-                for (int iter = 0; iter < size; ++iter) {
-                    new_func_expr[iter] = func_expr[iter];
+                func_expr_size += 1;
+                if (func_expr_size > size) {
+                    assert((func_expr_size-size)==1);
+                    std::string* new_func_expr = new std::string[size+1];
+                    std::string* new_degree_expr = new std::string[size+1];
+                    std::string* new_param_expr = new std::string[size+1];
+                    char* new_operations = new char[size+1];
+                    for (int iter = 0; iter < size; ++iter) {
+                        new_func_expr[iter] = func_expr[iter];
+                        new_degree_expr[iter] = degree_expr[iter];
+                        new_param_expr[iter] = param_expr[iter];
+                        new_operations[iter] = operations[iter]; 
+                    }
+                    delete [] func_expr;
+                    delete [] degree_expr;
+                    delete [] param_expr;
+                    delete [] operations;
+                    
+                    size += 1;
+                    
+                    func_expr = new_func_expr;
+                    degree_expr = new_degree_expr;
+                    param_expr = new_param_expr;
+                    operations = new_operations;
+
+                    func_expr[size-1] = expression;
+                    degree_expr[size-1] = "1";
+                    param_expr[size-1] = "none";
+                    operations[size-1] = '0';
+                    break;
+                } else if (func_expr_size == size) {
+                    std::string* new_func_expr = new std::string[func_expr_size];
+                    for (int iter = 0; iter < func_expr_size-1; ++iter) {
+                        new_func_expr[iter] = func_expr[iter];
+                    }
+                    delete [] func_expr;
+                    func_expr = new_func_expr;
+                    func_expr[size-1] = expression;
+                    func_expr_size += 1;
+                    break;
                 }
-                delete [] func_expr;
-                size += 1;
-                func_expr = new_func_expr;
-                func_expr[size-1] = expression;
-                break;
             }
         }
         case (1): {
             if (degree_expr == nullptr) {
-                size = 1;
+                assert((size==0)||(size==1));
                 delete [] degree_expr;
+                size = 1;
                 degree_expr = new std::string[size];
-                degree_expr[size-1] = expression;
+                degree_expr[0] = expression;
+                degree_expr_size = 1;
                 break;
             } else {
-                std::string* new_degree_expr = new std::string[size+1];
-                for (int iter = 0; iter < size; ++iter) {
-                    new_degree_expr[iter] = degree_expr[iter];
+                degree_expr_size += 1;
+                if (degree_expr_size > size) {
+                    assert((degree_expr_size-size)==1);
+                    std::string* new_func_expr = new std::string[size+1];
+                    std::string* new_degree_expr = new std::string[size+1];
+                    std::string* new_param_expr = new std::string[size+1];
+                    char* new_operations = new char[size+1];
+                    for (int iter = 0; iter < size; ++iter) {
+                        new_func_expr[iter] = func_expr[iter];
+                        new_degree_expr[iter] = degree_expr[iter];
+                        new_param_expr[iter] = param_expr[iter];
+                        new_operations[iter] = operations[iter]; 
+                    }
+                    delete [] func_expr;
+                    delete [] degree_expr;
+                    delete [] param_expr;
+                    delete [] operations;
+                    
+                    size += 1;
+                    
+                    func_expr = new_func_expr;
+                    degree_expr = new_degree_expr;
+                    param_expr = new_param_expr;
+                    operations = new_operations;
+
+                    func_expr[size-1] = "none";
+                    degree_expr[size-1] = expression;
+                    param_expr[size-1] = "none";
+                    operations[size-1] = '0';
+                    break;
+                } else if (degree_expr_size == size) {
+                    std::string* new_degree_expr = new std::string[degree_expr_size];
+                    for (int iter = 0; iter < degree_expr_size-1; ++iter) {
+                        new_degree_expr[iter] = degree_expr[iter];
+                    }
+                    delete [] degree_expr;
+                    degree_expr = new_degree_expr;
+                    degree_expr[size-1] = expression;
+                    degree_expr_size += 1;
+                    break;
                 }
-                delete [] degree_expr;
-                size += 1;
-                degree_expr = new_degree_expr;
-                degree_expr[size-1] = expression;
-                break;
             }
         }
         case (2): {
             if (param_expr == nullptr) {
-                size = 1;
+                assert((size==0)||(size==1));
                 delete [] param_expr;
+                size = 1;
                 param_expr = new std::string[size];
-                param_expr[size-1] = expression;
+                param_expr[0] = expression;
+                param_expr_size = 1;
                 break;
             } else {
-                std::string* new_param_expr = new std::string[size+1];
-                for (int iter = 0; iter < size; ++iter) {
-                    new_param_expr[iter] = param_expr[iter];
+                param_expr_size += 1;
+                if (param_expr_size > size) {
+                    assert((param_expr_size-size)==1);
+                    std::string* new_func_expr = new std::string[size+1];
+                    std::string* new_degree_expr = new std::string[size+1];
+                    std::string* new_param_expr = new std::string[size+1];
+                    char* new_operations = new char[size+1];
+                    for (int iter = 0; iter < size; ++iter) {
+                        new_func_expr[iter] = func_expr[iter];
+                        new_degree_expr[iter] = degree_expr[iter];
+                        new_param_expr[iter] = param_expr[iter];
+                        new_operations[iter] = operations[iter]; 
+                    }
+                    delete [] func_expr;
+                    delete [] degree_expr;
+                    delete [] param_expr;
+                    delete [] operations;
+                    
+                    size += 1;
+                    
+                    func_expr = new_func_expr;
+                    degree_expr = new_degree_expr;
+                    param_expr = new_param_expr;
+                    operations = new_operations;
+
+                    func_expr[size-1] = "none";
+                    degree_expr[size-1] = "1";
+                    param_expr[size-1] = expression;
+                    operations[size-1] = '0';
+                    break;
+                } else if (param_expr_size == size) {
+                    std::string* new_param_expr = new std::string[param_expr_size];
+                    for (int iter = 0; iter < param_expr_size-1; ++iter) {
+                        new_param_expr[iter] = param_expr[iter];
+                    }
+                    delete [] param_expr;
+                    param_expr = new_param_expr;
+                    param_expr[size-1] = expression;
+                    param_expr_size += 1;
+                    break;
                 }
-                delete [] param_expr;
-                size += 1;
-                param_expr = new_param_expr;
-                param_expr[size-1] = expression;
-                break;
             }
         }
     }
@@ -95,29 +210,68 @@ bool Func_Data::insert_operation_data(const char& operation) {
     int length = 6;
     for (int iter = 0; iter < length; ++iter) {
         if (operation == signs[iter]) {
-            bool flag = false;
+            flag = false;
             break;
         }
     } 
     if (flag) {
-        printf("Wrong operation\n");
+        printf("Wrong operation: '%c'\n", operation);
         return false;
     }
 
     if (operations == nullptr) {
-        size = 1;
-        operations[size-1] = operation;
-    } else {
-        std::string* new_operations = new std::string[size-1];
-        for (int iter = 0; iter < size; ++iter) {
-            new_operations[iter] = operations[iter];
-        }
+        assert((size == 0)||(size == 1));
         delete [] operations;
-        size += 1;
+        size = 1;
+        char* new_operations = new char[size];
         operations = new_operations;
-        operations[size-1] = operation;
+        operations[0] = operation;
+        operations_size = 1;
+        return true;
+    } else {
+        operations_size += 1;
+        if (operations_size > size) {
+            assert((operations_size-size)==1);
+            std::string* new_func_expr = new std::string[size+1];
+            std::string* new_degree_expr = new std::string[size+1];
+            std::string* new_param_expr = new std::string[size+1];
+            char* new_operations = new char[size+1];
+            for (int iter = 0; iter < size; ++iter) {
+                new_func_expr[iter] = func_expr[iter];
+                new_degree_expr[iter] = degree_expr[iter];
+                new_param_expr[iter] = param_expr[iter];
+                new_operations[iter] = operations[iter]; 
+            }
+            delete [] func_expr;
+            delete [] degree_expr;
+            delete [] param_expr;
+            delete [] operations;
+                            
+            size += 1;
+                            
+            func_expr = new_func_expr;
+            degree_expr = new_degree_expr;
+            param_expr = new_param_expr;
+            operations = new_operations;
+
+            func_expr[size-1] = "none";
+            degree_expr[size-1] = "1";
+            param_expr[size-1] = "none";
+            operations[size-1] = operation;
+            return true;
+        } else if (operations_size == size) {
+            char* new_operations = new char[operations_size];
+            for (int iter = 0; iter < operations_size-1; ++iter) {
+                new_operations[iter] = operations[iter];
+            }
+            delete [] operations;
+            operations = new_operations;
+            operations[size-1] = operation;
+            operations_size += 1;
+            return true;
+        }
     }
-    return true;
+    return false;
 }
 
 Math::Math() {}
@@ -269,6 +423,7 @@ bool Math::func_expr(const std::string& expression, Func_Data* data) {
         if (cur_element_type == 0) { //func handler
             if (cur_expr_type == -1) { // first iter
                 cur_expr_type = 0;
+                data->insert_operation_data('+');
             } else if (prev_expr_type == 0) {
                 cur_expr_type = 0;
             } else {
@@ -292,11 +447,11 @@ bool Math::func_expr(const std::string& expression, Func_Data* data) {
             } else {
                 if (prev_element_type == 3) {
                     int prev_element_branch_type = check_is_branch(expression[iter-1]);
-                    if (prev_element_branch_type == 1) {
+                    if (prev_element_branch_type == 1) { // new func_expr: )'sign'func_expr... 
                         cur_expr_type = 0;
                         cur_element_type = 0;
                         //printf("%s", expression[iter]);
-                        //data->insert_operation_data(expression[iter]);
+                        data->insert_operation_data(expression[iter]);
                     }
                 }
             }
@@ -318,9 +473,6 @@ bool Math::func_expr(const std::string& expression, Func_Data* data) {
                 end = iter;
                 if (cur_expr_type == -1) {
                     cur_expr_type = 0;
-                } else if (prev_expr_type == 0) {
-                    data->insert_data("1", 1); //degree value is 1 by default
-                    cur_expr_type = 2; //param_type
                 } else if (cur_expr_type == 1) { //degree
                     if (prev_element_type == 3) {
                         int prev_element_branch_type = check_is_branch(expression[iter-1]);
@@ -333,13 +485,10 @@ bool Math::func_expr(const std::string& expression, Func_Data* data) {
                 if (cur_expr_type == -1) {
                     printf("Expression cant being started by %s\n", expression[iter]);
                     return false;
-                } else if ((cur_expr_type == 1) && (iter == (expression.size()-1))) {
-                    data->insert_data("x", 2); //param value is x by default
                 }
                 end = iter;
                 std::string info = expression.substr(start+1, (end-1) -(start+1)+1);
                 data->insert_data(info, cur_expr_type);
-                
             }
         }
 
