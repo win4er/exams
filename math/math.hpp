@@ -21,7 +21,6 @@ struct Func_Data {
         Func_Data(const std::string& f_expr, const std::string& d_expr, const  std::string& p_expr);
         ~Func_Data();
         bool insert_data(const std::string& expr, int pos); //pos 0 - f_expr, 1 - d_expr, 2 - p_expr
-        bool insert_operation_data(const char& element);
 };
 
 class Math {

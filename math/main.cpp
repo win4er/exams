@@ -4,7 +4,7 @@
 int main() {
     Math handler;
     const char* expression = "";
-    expression = "+cos^(3*x)(x+1)+(x+2)";
+    expression = "cos^(3*x)(x+1)";
     Func_Data obj;
     printf("%s\n", expression);
     handler.func_expr(expression, &obj);
