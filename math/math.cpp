@@ -174,8 +174,8 @@ bool Math::check_br_in_expr(const std::string& s) {
     int count = 0; 
     //TODO: write it, considering this: }{ is wrong, 
     //actually u can count += branch, and if count > 0 at ')', that means its broken expr
-    int opening_br_indexes[4] = {0, 0, 0, 0};
-    int closing_br_indexes[4] = {0, 0, 0, 0};
+    int opening_br_indexes[4] = {-1, -1, -1, -1};
+    int closing_br_indexes[4] = {-1, -1, -1, -1};
     std::map<std::string, int> branch_map = {
         {"()", 0},
         {"{}", 0},
@@ -186,98 +186,82 @@ bool Math::check_br_in_expr(const std::string& s) {
     int check = 0;
     int start = -1;
     int end = -1;
+
+    std::string type = "";
     for (int iter = 0; iter < s.size(); ++iter) {
         check = check_is_branch((s.c_str())[iter]);
         if (check) {
+            count += 1;
             switch (s.c_str()[iter]) { //TODO: write it without switch
                 case ('('): {
-                    count += 1;
+                    type = "()";
                     branch_map["()"] += check;
                     opening_br_indexes[0] = iter;
                     start = iter;
                     end = closing_br_indexes[0];
-                    if ((check == 1) && ((end-start)<0)) {
-                        return false;
-                    }
                     break;
                 }
                 case (')'): {
-                    count += 1;
+                    type = "[]";
                     branch_map["()"] += check;
                     closing_br_indexes[0] = iter;
                     start = opening_br_indexes[0];
                     end = iter;
-                    if ((check == 1) && ((end-start)<0)) {
-                        return false;
-                    }
                     break;
                 }
                 case ('{'): {
-                    count += 1;
+                    type = "{}";
                     branch_map["{}"] += check;
                     opening_br_indexes[1] = iter;
                     start = iter;
                     end = closing_br_indexes[1];
-                    if ((check == 1) && ((end-start)<0)) {
-                        return false;
-                    }
                     break;
                 }
                 case ('}'): {
-                    count += 1;
+                    type = "{}";
                     branch_map["{}"] += check;
                     closing_br_indexes[1] = iter;
                     start = opening_br_indexes[1];
                     end = iter;
-                    if ((check == 1) && ((end-start)<0)) {
-                        return false;
-                    }
                     break;
                 }
                 case ('['): {
-                    count += 1;
+                    type = "[]";
                     branch_map["[]"] += check;
                     opening_br_indexes[2] = iter;
                     start = iter;
                     end = closing_br_indexes[2];
-                    if ((check == 1) && ((end-start)<0)) {
-                        return false;
-                    }
                     break;
                 }
                 case (']'): {
-                    count += 1;
+                    type = "[]";
                     branch_map["[]"] += check;
                     closing_br_indexes[2] = iter;
                     start = opening_br_indexes[2];
                     end = iter;
-                    if ((check == 1) && ((end-start)<0)) {
-                        return false;
-                    }
                     break;
                 }
                 case ('<'): {
-                    count += 1;
+                    type = "<>";
                     branch_map["<>"] += check;
                     opening_br_indexes[3] = iter;
                     start = iter;
                     end = closing_br_indexes[3];
-                    if ((check == 1) && ((end-start)<0)) {
-                        return false;
-                    }
                     break;
                 }
                 case ('>'): {
-                    count += 1;
+                    type = "<>";
                     branch_map["<>"] += check;
                     closing_br_indexes[3] = iter;
                     start = opening_br_indexes[3];
                     end = iter;
-                    if ((check == 1) && ((end-start)<0)) {
-                        return false;
-                    }
                     break;
                 }
+            }
+            bool condition = ((end-start)<0)&&((end != -1)&&(start != -1)) && (branch_map[type]==0);
+            if (condition) {
+                //printf("'%c, %c'; '%d, %d'\n", s[start], s[end], start, end);
+                return false;
             }
         }
     }
