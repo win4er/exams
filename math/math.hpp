@@ -8,19 +8,14 @@
 
 struct Func_Data {
     public:
-        int size;
-        int func_expr_size;
-        int degree_expr_size;
-        int param_expr_size;
-        int operations_size;
+        int count;
         std::string* func_expr;
         std::string* degree_expr;
         std::string* param_expr;
-        char* operations; //operations between 2 or more funcs(only '*' and '/')
+        char* operations;
         Func_Data();
-        Func_Data(const std::string& f_expr, const std::string& d_expr, const  std::string& p_expr);
         ~Func_Data();
-        bool insert_data(const std::string& expr, int pos); //pos 0 - f_expr, 1 - d_expr, 2 - p_expr
+        bool insert_data(const std::string& expr, int info_type, int index); //info_type 0 - f_expr, 1 - d_expr, 2 - p_expr, 3 - operation
 };
 
 class Math {
@@ -35,11 +30,9 @@ class Math {
         //'right' string: cos(x)+sin(x)+(tg^(2x)(2x)+3)+4
         // func_expr: func_name, ^(degree), (args)
         // func_expr: func_name, ^number, (args)
-        int count_segments(std::string expr); //count of elements in expression
         int element_type(const char& element);
-        bool func_expr(const std::string& expression, Func_Data *data);
+        bool expression(const std::string& expression, Func_Data *data);
         //all non math funcs should be private later
-        bool expression(std::string expr, std::map<std::string, std::string[]> *func_arg_map);
         std::string derivative(std::string s);
 
 };
