@@ -260,7 +260,7 @@ bool Math::check_br_in_expr(const std::string& s) {
             }
             bool condition = ((end-start)<0)&&((end != -1)&&(start != -1)) && (branch_map[type]==0);
             if (condition) {
-                //printf("'%c, %c'; '%d, %d'\n", s[start], s[end], start, end);
+                printf("'%c, %c'; '%d, %d'\n", s[start], s[end], start, end);
                 return false;
             }
         }
@@ -270,7 +270,7 @@ bool Math::check_br_in_expr(const std::string& s) {
         (branch_map["{}"] == 0) &&
         (branch_map["[]"] == 0) &&
         (branch_map["<>"] == 0) &&
-        (count != 0)
+        (count % 2 == 0)
     };
     return condition;
 }
