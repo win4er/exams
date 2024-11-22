@@ -34,7 +34,7 @@ bool Func_Data::insert_data(const std::string& expression, int info_type, int in
             }
             case (3): {
                 assert(expression.size() == 1);
-                operations[index] = expression[0];
+                operations[index] = expression;
                 break;
             }
         }
@@ -45,14 +45,14 @@ bool Func_Data::insert_data(const std::string& expression, int info_type, int in
             delete [] param_expr;
             delete [] operations;
             count += 1;
-            std::string* func_expr = new std::string[count];
-            std::string* degree_expr = new std::string[count];
-            std::string* param_expr = new std::string[count];
-            char* new_operations = new char[count];
+            func_expr = new std::string[count];
+            degree_expr = new std::string[count];
+            param_expr = new std::string[count];
+            operations = new std::string[count];
             func_expr[0] = "none";
             degree_expr[0] = "1";
             param_expr[0] = "none";
-            operations[0] = '+';
+            operations[0] = "+";
             switch (info_type) { // rewriting existed func_data
                 case (0): {
                     func_expr[index] = expression;
@@ -68,7 +68,7 @@ bool Func_Data::insert_data(const std::string& expression, int info_type, int in
                 }
                 case (3): {
                     assert(expression.size() == 1);
-                    operations[index] = expression[0];
+                    operations[index] = expression;
                     break;
                 }
             }
@@ -77,7 +77,7 @@ bool Func_Data::insert_data(const std::string& expression, int info_type, int in
             std::string* new_func_expr = new std::string[count];
             std::string* new_degree_expr = new std::string[count];
             std::string* new_param_expr = new std::string[count];
-            char* new_operations = new char[count];
+            std::string* new_operations = new std::string[count];
             for (int iter=0; iter < (count-1); ++iter) {
                 new_func_expr[iter] = func_expr[iter];
                 new_degree_expr[iter] = degree_expr[iter];
@@ -97,7 +97,7 @@ bool Func_Data::insert_data(const std::string& expression, int info_type, int in
             func_expr[index] = "none";
             degree_expr[index] = "1";
             param_expr[index] = "none";
-            operations[index] = '+';   
+            operations[index] = "+";   
             switch (info_type) {
                 case (0): {
                     func_expr[index] = expression;
@@ -119,7 +119,7 @@ bool Func_Data::insert_data(const std::string& expression, int info_type, int in
             }
         }
     } else {
-        printf("There is %d func_data expressions, you can add 1 more, not %d more", count, count-index-1);
+        printf("There is %d func_data expressions, you can add 1 more, not %d more\n", count, count-index-1);
         return false;
     }
     return true;
@@ -260,7 +260,7 @@ bool Math::check_br_in_expr(const std::string& s) {
             }
             bool condition = ((end-start)<0)&&((end != -1)&&(start != -1)) && (branch_map[type]==0);
             if (condition) {
-                printf("'%c, %c'; '%d, %d'\n", s[start], s[end], start, end);
+                //printf("'%c, %c'; '%d, %d'\n", s[start], s[end], start, end);
                 return false;
             }
         }
@@ -290,7 +290,7 @@ int Math::element_type(const char& element) {
     return 0; //x or func_name
 }
 
-bool Math::expression(const std::string& expression, Func_Data* data) {
+bool Math::expression_type_data(const std::string& expression, int* expression_type_data) {
     assert(check_br_in_expr(expression));
     //code: 0 - func , 1 - degree, 2 - arg, 3 - sign_separator
     int prev_expr_type = -1;
@@ -307,6 +307,9 @@ bool Math::expression(const std::string& expression, Func_Data* data) {
 
     int cur_element_type = -1;
     int prev_element_type = -1;
+
+    int func_expr_count = 0;
+
     for (int iter = 0; iter < expression.size(); ++iter) {
         cur_element_type = element_type(expression[iter]);
 
@@ -316,35 +319,27 @@ bool Math::expression(const std::string& expression, Func_Data* data) {
                     cur_expr_type = 0;
                     prev_expr_type = 3; // idea? 3.....3......3, separator of func_expr
                     cur_branch_expr_status = false;
-                    start = iter-1; // start from sign_expr; then we add 1 to start and everything will be ok
-                    //data->insert_data("+", prev_expr_type); // sign data
                     break;
                 }
                 case (1): { // sign_expr_handler
                     cur_expr_type = 3;
                     cur_branch_expr_status = false;
                     sign = check_is_sign(expression[iter]);
-                    start = iter; // start from sign_expr;
                     if ((sign > 2) && (sign != 6)) {
                         printf("\nYou cant start an exception using %c\n", expression[iter]);
                         return false;
-                    } else { // i know about return above this line, but i need 'readable' code
-                        std::string sign_data = expression.substr(start, 1);
-                        //data->insert_data(sign_data, cur_expr_type);
                     }
                     break;
                 }
                 case (2): { // digit_expr_handler
                     cur_expr_type = 0;
                     cur_branch_expr_status = false;
-                    start = iter;
                     break;
                 }
                 case (3): { // branch_expr_handler
                     branch = check_is_branch(expression[iter]);
                     if (branch == -1) {
                         cur_expr_type = 0;
-                        start = iter;
                         cur_branch_expr_status = true;
                     } else {
                         printf("\nYou cant start an expression using %c\n", expression[iter]);
@@ -355,9 +350,8 @@ bool Math::expression(const std::string& expression, Func_Data* data) {
             }
         } else if ((iter != 0) && (iter != (expression.size()-1))) {
             switch (cur_element_type) {
-                case (0): { // func_expr_handler
+                case (0): { // func_element_expr_handler
                     cur_branch_expr_status = prev_branch_expr_status;
-                    end = iter;
                     if (prev_expr_type == 3) {
                         cur_expr_type = 0;
                     } else {
@@ -365,59 +359,42 @@ bool Math::expression(const std::string& expression, Func_Data* data) {
                     }
                     break;
                 }
-                case (1): { // sign_expr_handler
-                    cur_branch_expr_status = prev_branch_expr_status;
+                case (1): { // sign_element_expr_handler
+                    func_expr_count += 1;
+                    sign = check_is_sign(expression[iter]);
+                    cur_branch_expr_status = false;
                     if (prev_branch_expr_status) {
                         if (prev_element_type == 3) {
-                            branch = check_is_branch(expression[iter]);
+                            branch = check_is_branch(expression[iter-1]);
                             if (branch == 1) {
                                 cur_branch_expr_status = false;
+                                cur_expr_type = 3;
                             } else {
-                                cur_branch_expr_status = prev_branch_expr_status; 
-                                // i know that cur_br... already has this value,
-                                // but this way of code is more 'readable'
+                                cur_branch_expr_status = true;
+                                cur_expr_type = prev_expr_type;
                             }
+                        } else {
+                            cur_branch_expr_status = true;
+                            cur_expr_type = prev_expr_type;   
                         }
-                    }
-                    start = iter; //may be wrong
-                    end = iter;
-                    std::string sign_data = expression.substr(start, 1); //may be wrong
-                    //data->insert_data(sign_data, cur_expr_type);
-                    if (cur_branch_expr_status) {
-                        cur_expr_type = prev_expr_type;
                     } else {
                         cur_expr_type = 3;
-                        switch (prev_expr_type) {
-                            case (0): { // func_name_handler
-                                std::string func_name_data = expression.substr(start+1, (end-1)-(start+1)+1); // func_name is between 'sign' and 'sign'
-                                //data->insert_data(func_name_data, prev_expr_type);
-                                break;
-                            }
-                            case (1): { // degree_expr_handler
-                                // we store data before degree statement, so we have to store degree_expr and arg_expr data, but arg_expr is none by default
-                                std::string degree_expr_data = expression.substr(start+1, (end-1)-(start+1)+1); // degree_expr is also between 'sign' and 'sign'
-                                //data->insert_data(degree_expr_data, prev_expr_type);
-                                break;
-                            }
-                            case (2): { //arg_expr_handler
-                                std::string param_expr_data = expression.substr(start+1, (end-2)-(start+1)+1); // param_expr is between 'branch' and 'branch' + 'sign'
-                                //data->insert_data(param_expr_data, prev_expr_type);
-                                break;
-                            }
-                            case (3): {
-                                printf("\nSign '%c' before '%c', two signes in a row are not allowed\n", expression[iter-1], expression[iter]);
-                                return false;
-                                break;
-                            }
-                        }
                     }
-                    start = iter;
                     break;
                 }
                 case (2): { // digit_expr_handler
-                    cur_expr_type = prev_expr_type;
-                    cur_branch_expr_status = prev_branch_expr_status;
-                    end = iter;
+                    if (cur_branch_expr_status) {
+                        cur_expr_type = prev_expr_type;
+                    } else {
+                        if (prev_expr_type == 3) {
+                            sign = check_is_sign(expression[iter-1]);
+                            if (sign == 5) {
+                                cur_expr_type = 1;
+                            } else {
+                                cur_expr_type = 0;
+                            }
+                        }
+                    }
                     break;
                 }
                 case (3): { // branch_expr_handler
@@ -425,7 +402,6 @@ bool Math::expression(const std::string& expression, Func_Data* data) {
                     cur_branch_expr_status = true;
                     switch (branch) {
                         case (-1): { // opening branch
-                            start = iter;
                             switch (prev_expr_type) {
                                 case (0): { // func_expr_handler
                                     cur_expr_type = 2;
@@ -433,8 +409,6 @@ bool Math::expression(const std::string& expression, Func_Data* data) {
                                 }
                                 case (1): { // degree_expr_handler
                                     cur_expr_type = 2;
-                                    std::string degree_expr_data = expression.substr(start+1, (end-1)-(start+1)+1); // degree_expre is between 'sign' and 'branch'
-                                    //data->insert_data(degree_expr_data, prev_expr_type);
                                     break;
                                 }
                                 case (2): { // arg_expr_handler
@@ -443,7 +417,12 @@ bool Math::expression(const std::string& expression, Func_Data* data) {
                                     break;
                                 }
                                 case (3): { // sign_separator_handler
-                                    cur_expr_type = 0;
+                                    sign = check_is_sign(expression[iter-1]);
+                                    if (sign == 5) {
+                                        cur_expr_type = 1;
+                                    } else {
+                                        cur_expr_type = 0;
+                                    }
                                     break;
                                 }
                                 
@@ -451,11 +430,8 @@ bool Math::expression(const std::string& expression, Func_Data* data) {
                             break;
                         }
                         case (1): { // closing branch
-                            end = iter;
                             switch (prev_expr_type) { // func_expr_handler
                                 case (0): {
-                                    printf("\nDoesnt seem to be real, if you use '%c' after func_name\n", expression[iter]);
-                                    return false;
                                     break;
                                 }
                                 case (1): { // degree_expr_handler
@@ -465,7 +441,7 @@ bool Math::expression(const std::string& expression, Func_Data* data) {
                                     break;
                                 }
                                 case (3): { // sign_separator_handler
-                                    printf("\nFound sign '%c' before branch '%c', without func_expr after sign\n", expression[iter-1], expression[iter]);
+                                    printf("\nFound sign '%c' before closing branch '%c', without func_expr after sign\n", expression[iter-1], expression[iter]);
                                     return false;
                                     break;
                                 }
@@ -478,15 +454,16 @@ bool Math::expression(const std::string& expression, Func_Data* data) {
             }
         } else if (iter == (expression.size()-1)) {
             if (prev_expr_type == 3) {
-                cur_expr_type = 0;
+                if (sign == 5) {
+                    cur_expr_type = 1;
+                } else {
+                    cur_expr_type = 0;
+                }
             } else {
                 cur_expr_type = prev_expr_type;
             }
             switch (cur_element_type) {
                 case (0): { // func_name_expr_handler
-                    end = iter;
-                    std::string func_name_expr = expression.substr(start+1, end-(start+1)+1);
-                    //data->insert_data(func_name_expr, cur_expr_type);
                     break;
                 }
                 case (1): { // sign_expr_handler
@@ -494,30 +471,9 @@ bool Math::expression(const std::string& expression, Func_Data* data) {
                     break;
                 }
                 case (2): { // digit_expr_handler
-                    end = iter;
                     if (cur_branch_expr_status) {
                         printf("\nBranch is still open, but its the end of expression\n");
                         break;
-                    }
-                    switch (cur_expr_type) {
-                        case (0): { // func_expr_handler
-                            std::string func_expr_data = expression.substr(start+1, end-(start+1)+1);
-                            //data->insert_data(func_expr_data, cur_expr_type);
-                            break;
-                        }
-                        case (1): { // degree_expr_handler
-                            std::string degree_expr_data = expression.substr(start+1, end-(start+1)+1);
-                            //data->insert_data(degree_expr_data, cur_expr_type);
-                            break;
-                        }
-                        case (2): { // arg_expr_handler
-                            std::string param_expr_data = expression.substr(start+1, end-(start+1)+1);
-                            //data->insert_data(param_expr_data, cur_expr_type);
-                            break;
-                        }
-                        case (3): { // sign_separator_expr_handler
-                            break;
-                        }
                     }
                     break;
                 }
@@ -527,28 +483,11 @@ bool Math::expression(const std::string& expression, Func_Data* data) {
                         printf("\nYou cant use opening branch '%c' at the end of expr\n", expression[iter]);
                         return false;
                     } else if (branch == 1) {
-                        end = iter;
-                        switch (cur_expr_type) {
-                            case (0): { // func_expr_handler
-                                std::string func_expr_data = expression.substr(start+1+1, (end-1)-(start+1+1)+1);
-                                //data->insert_data(func_expr_data, cur_expr_type);
-                                break;
-                            }
-                            case (1): { // degree_expr_handler
-                                std::string degree_expr_data = expression.substr(start+1+1, (end-1)-(start+1+1)+1);
-                                //data->insert_data(degree_expr_data, cur_expr_type);                                
-                                break;
-                            }
-                            case (2): { // param_expr_handler
-                                std::string param_expr_data = expression.substr(start+1+1, (end-1)-(start+1)+1);
-                                //data->insert_data(param_expr_data, cur_expr_type);
-                                break;
-                            }
-                            case (3): { // separator_expr_handler
-                                printf("\nUsing closing branch '%c' in front of separator sign '%c' is not allowed\n", expression[iter], expression[iter-1]);
-                                return false;
-                                break;
-                            } //fuck i forgot about branches in expressions, thats why data can be stored bad, but i want to go sleep
+                        if (prev_branch_expr_status) {
+                            cur_branch_expr_status = true;
+                            cur_expr_type = prev_expr_type;
+                        } else {
+                            cur_branch_expr_status = false;
                         }
                     }
                     break;
@@ -558,10 +497,109 @@ bool Math::expression(const std::string& expression, Func_Data* data) {
         prev_element_type = cur_element_type;
         prev_expr_type = cur_expr_type;
         prev_branch_expr_status = cur_branch_expr_status;
-        printf("%d", cur_expr_type);
+        expression_type_data[iter] = cur_expr_type;
+    }
+    return true;
+}
+
+bool Math::expression(const std::string& expression, Func_Data* data) {
+    assert(check_br_in_expr(expression));
+    int* expr_code_type = new int[expression.size()];
+    expression_type_data(expression, expr_code_type);
+    
+    const int size = expression.size();
+    int func_count = 0;
+    int prev_func_count = 0;
+
+    int start=0, end=0;
+    for (int iter=0; iter<size; ++iter) {
+        if ((iter == 0) || (iter == (size-1))) {
+            if ((iter == 0) && (iter == (size-1))) {
+                start = iter;
+                end = iter;
+                func_count = 1;
+                int info_type = expr_code_type[iter];
+                std::string info = expression.substr(start, end-start+1);
+                data->insert_data(info, info_type, func_count-1);
+                //printf("[%d][%d]%s\n", func_count-1, info_type, info.c_str());
+            } else if (iter == 0) {
+                start = iter;
+                end = iter;
+                func_count = 1;
+            } else if (iter == (size-1)) {
+                end = iter;
+                int branch_1 = check_is_branch(expression[start]);
+                int branch_2 = check_is_branch(expression[end]);
+                int info_type = expr_code_type[start];
+                std::string info;
+                if ((branch_1 == -1) && (branch_2 == 1)) {
+                    info = expression.substr(start+1, end-1-(start+1)+1);
+                } else {
+                    info = expression.substr(start, end-start+1);
+                }
+                if ((expr_code_type[iter] == 0)&&(expr_code_type[iter-1] == 3)) {
+                    func_count += 1;
+                }
+                data->insert_data(info, info_type, func_count-1);
+                //printf("[%d][%d]%s\n", func_count-1, info_type, info.c_str());
+            }
+        } else {
+            if (expr_code_type[iter] != expr_code_type[iter-1]) {
+                std::string info = "";
+                if (expr_code_type[iter-1] == 3) {
+                    start = iter;
+                    end = iter;
+                    if (expr_code_type[iter] == 0) {
+                        func_count += 1;
+                    }
+                } else if (expr_code_type[iter] == 3) {
+                    int branch_1 = check_is_branch(expression[start]);
+                    int branch_2 = check_is_branch(expression[end]);
+                    int info_type = expr_code_type[start];
+                    std::string info;
+                    if ((branch_1 == -1) && (branch_2 == 1)) {
+                        info = expression.substr(start+1, end-1-(start+1)+1);
+                    } else {
+                        info = expression.substr(start, end-start+1);
+                    }
+                    data->insert_data(info, info_type, func_count-1);
+                    //printf("[%d][%d]%s\n", func_count-1, info_type, info.c_str());
+                } else {
+                    assert(start>=0);
+                    int branch_1 = check_is_branch(expression[start]);
+                    int branch_2 = check_is_branch(expression[end]);
+                    int info_type = expr_code_type[start];
+                    std::string info;
+                    if ((branch_1 == -1) && (branch_2 == 1)) {
+                        info = expression.substr(start+1, end-1-(start+1)+1);
+                    } else {
+                        info = expression.substr(start, end-start+1);
+                    }
+                    data->insert_data(info, info_type, func_count-1);
+                    //printf("[%d][%d]%s\n", func_count-1, info_type, info.c_str());
+                    start = iter;
+                    end = iter;
+                }
+            } else {
+                end = iter;
+            }
+        }
+        if (prev_func_count != func_count) {
+            std::string sign_info;
+            if (iter == 0) {
+                sign_info = "+";
+                data->insert_data(sign_info, 3, func_count-1);                
+            } else {
+                sign_info = expression.substr(iter-1, 1);
+                data->insert_data(sign_info, 3, func_count-1);                
+            }
+            //printf("%s", sign_info.c_str());
+        }
+        printf("%d", func_count);
+        prev_func_count = func_count;
     }
     printf("\n");
-    //printf("%s\n", expression.c_str()[0]);
+    delete [] expr_code_type;
     return true;
 }
 

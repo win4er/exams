@@ -12,7 +12,7 @@ struct Func_Data {
         std::string* func_expr;
         std::string* degree_expr;
         std::string* param_expr;
-        char* operations;
+        std::string* operations;
         Func_Data();
         ~Func_Data();
         bool insert_data(const std::string& expr, int info_type, int index); //info_type 0 - f_expr, 1 - d_expr, 2 - p_expr, 3 - operation
@@ -31,6 +31,7 @@ class Math {
         // func_expr: func_name, ^(degree), (args)
         // func_expr: func_name, ^number, (args)
         int element_type(const char& element);
+        bool expression_type_data(const std::string& expression, int* expression_type_data);
         bool expression(const std::string& expression, Func_Data *data);
         //all non math funcs should be private later
         std::string derivative(std::string s);

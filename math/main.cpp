@@ -3,19 +3,23 @@
 
 int main() {
     Math handler;
-    const char* expression = "";
-    expression = "x^2 + 1";
-    printf("%s\n", expression);
+    std::string expression = "";
+    expression = "(sin^2+3)+cos^(3+3)(3+x)+sin(x)+x^(3+4+x^2)+sin^(x^2+3)+x*90+x^(600-x)"; //"(sin^2+3)+cos^(3+3)(3+x)+sin(x)+x^(3+4+x^2)+sin^(x^2+3)+x*90+x^(600-x)"
+    printf("%s\n", expression.c_str());
 
     Func_Data obj;
+    int* data_expr = new int[expression.size()];
+    handler.expression_type_data(expression, data_expr);
+    for (int i=0; i<expression.size(); ++i) {
+        std::cout << data_expr[i];
+    }
+    std::cout << std::endl;
     handler.expression(expression, &obj);
-    printf("Handler is done\n");
-    printf("size: %d", obj.count);
-    for (int iter = 0; iter < obj.count; ++iter) {
-        printf("%c, ", obj.operations[iter]);
-        printf("%s, ", obj.func_expr[iter].c_str());
-        printf("%s, ", obj.degree_expr[iter].c_str());
-        printf("%s", obj.param_expr[iter].c_str());
+    for (int i=0; i<obj.count;++i) {
+        printf("%s\t", obj.func_expr[i].c_str());
+        printf("%s\t", obj.degree_expr[i].c_str());
+        printf("%s\t", obj.param_expr[i].c_str());
+        printf("%s\t\n", obj.operations[i].c_str());
     }
     printf("\n");
     return 0;
