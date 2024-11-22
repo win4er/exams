@@ -39,83 +39,48 @@ bool Func_Data::insert_data(const std::string& expression, int info_type, int in
             }
         }
     } else if (index == count) { // + 1 new func_data
-        if (count == 0) {
-            delete [] func_expr;
-            delete [] degree_expr;
-            delete [] param_expr;
-            delete [] operations;
-            count += 1;
-            func_expr = new std::string[count];
-            degree_expr = new std::string[count];
-            param_expr = new std::string[count];
-            operations = new std::string[count];
-            func_expr[0] = "none";
-            degree_expr[0] = "1";
-            param_expr[0] = "none";
-            operations[0] = "+";
-            switch (info_type) { // rewriting existed func_data
-                case (0): {
-                    func_expr[index] = expression;
-                    break;
-                }
-                case (1): {
-                    degree_expr[index] = expression;
-                    break;
-                }
-                case (2): {
-                    param_expr[index] = expression;
-                    break;
-                }
-                case (3): {
-                    assert(expression.size() == 1);
-                    operations[index] = expression;
-                    break;
-                }
-            }
-        } else {
-            count += 1;
-            std::string* new_func_expr = new std::string[count];
-            std::string* new_degree_expr = new std::string[count];
-            std::string* new_param_expr = new std::string[count];
-            std::string* new_operations = new std::string[count];
-            for (int iter=0; iter < (count-1); ++iter) {
-                new_func_expr[iter] = func_expr[iter];
-                new_degree_expr[iter] = degree_expr[iter];
-                new_param_expr[iter] = param_expr[iter];
-                operations[iter] = operations[iter];
-            }
-            delete [] func_expr;
-            delete [] degree_expr;
-            delete [] param_expr;
-            delete [] operations;
+        count += 1;
+        std::string* new_func_expr = new std::string[count];
+        std::string* new_degree_expr = new std::string[count];
+        std::string* new_param_expr = new std::string[count];
+        std::string* new_operations = new std::string[count];
+        for (int iter=0; iter < (count-1); ++iter) {
+            new_func_expr[iter] = func_expr[iter];
+            new_degree_expr[iter] = degree_expr[iter];
+            new_param_expr[iter] = param_expr[iter];
+            new_operations[iter] = operations[iter];
+        }
+        delete [] func_expr;
+        delete [] degree_expr;
+        delete [] param_expr;
+        delete [] operations;
 
-            func_expr = new_func_expr;
-            degree_expr = new_degree_expr;
-            param_expr = new_param_expr;
-            operations = new_operations;
+        func_expr = new_func_expr;
+        degree_expr = new_degree_expr;
+        param_expr = new_param_expr;
+        operations = new_operations;
 
-            func_expr[index] = "none";
-            degree_expr[index] = "1";
-            param_expr[index] = "none";
-            operations[index] = "+";   
-            switch (info_type) {
-                case (0): {
-                    func_expr[index] = expression;
-                    break;
-                }
-                case (1): {
-                    degree_expr[index] = expression;
-                    break;
-                }
-                case (2): {
-                    param_expr[index] = expression;
-                    break;
-                }
-                case (3): {
-                    assert(expression.size() == 1);
-                    operations[index] = expression[0];
-                    break;
-                }
+        func_expr[index] = "none";
+        degree_expr[index] = "1";
+        param_expr[index] = "none";
+        operations[index] = "+";   
+        switch (info_type) {
+            case (0): {
+                func_expr[index] = expression;
+                break;
+            }
+            case (1): {
+                degree_expr[index] = expression;
+                break;
+            }
+            case (2): {
+                param_expr[index] = expression;
+                break;
+            }
+            case (3): {
+                assert(expression.size() == 1);
+                operations[index] = expression;
+                break;
             }
         }
     } else {
@@ -521,11 +486,17 @@ bool Math::expression(const std::string& expression, Func_Data* data) {
                 int info_type = expr_code_type[iter];
                 std::string info = expression.substr(start, end-start+1);
                 data->insert_data(info, info_type, func_count-1);
+                std::string sign_info;
+                sign_info = "+";
+                data->insert_data(sign_info, 3, func_count-1);  
                 //printf("[%d][%d]%s\n", func_count-1, info_type, info.c_str());
             } else if (iter == 0) {
                 start = iter;
                 end = iter;
                 func_count = 1;
+                std::string sign_info;
+                sign_info = "+";
+                data->insert_data(sign_info, 3, func_count-1);                  
             } else if (iter == (size-1)) {
                 end = iter;
                 int branch_1 = check_is_branch(expression[start]);
@@ -539,6 +510,11 @@ bool Math::expression(const std::string& expression, Func_Data* data) {
                 }
                 if ((expr_code_type[iter] == 0)&&(expr_code_type[iter-1] == 3)) {
                     func_count += 1;
+                    std::string sign_info;
+                    sign_info = expression.substr(iter-1, 1);
+                    data->insert_data(sign_info, 3, func_count-1);
+                    std::string info = expression.substr(iter, 1);
+                    info_type = expr_code_type[iter];
                 }
                 data->insert_data(info, info_type, func_count-1);
                 //printf("[%d][%d]%s\n", func_count-1, info_type, info.c_str());
@@ -551,6 +527,9 @@ bool Math::expression(const std::string& expression, Func_Data* data) {
                     end = iter;
                     if (expr_code_type[iter] == 0) {
                         func_count += 1;
+                        std::string sign_info;
+                        sign_info = expression.substr(iter-1, 1);
+                        data->insert_data(sign_info, 3, func_count-1);                       
                     }
                 } else if (expr_code_type[iter] == 3) {
                     int branch_1 = check_is_branch(expression[start]);
@@ -584,18 +563,7 @@ bool Math::expression(const std::string& expression, Func_Data* data) {
                 end = iter;
             }
         }
-        if (prev_func_count != func_count) {
-            std::string sign_info;
-            if (iter == 0) {
-                sign_info = "+";
-                data->insert_data(sign_info, 3, func_count-1);                
-            } else {
-                sign_info = expression.substr(iter-1, 1);
-                data->insert_data(sign_info, 3, func_count-1);                
-            }
-            //printf("%s", sign_info.c_str());
-        }
-        printf("%d", func_count);
+        //printf("%d", func_count);
         prev_func_count = func_count;
     }
     printf("\n");
