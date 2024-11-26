@@ -256,20 +256,19 @@ int Math::element_type(const char& element) {
 }
 
 bool Math::check_is_const_expr(const std::string& expression) {
-    int cur_element_type = 0;
-    int prev_element_type = 0;
+    int cur_element_type = -1;
+    int prev_element_type = -1;
     for (int iter=0; iter<expression.size(); ++iter) {
-        cur_element_type = element_type(expression[iter]);
-        printf("%d\n", cur_element_type);
+        cur_element_type = check_is_digit(expression[iter]);
         if (iter==0) {
-            if (cur_element_type == 2) {
+            if (cur_element_type != 0) {
                 prev_element_type = cur_element_type;
                 continue;
             } else {
                 return false;
             }
         }
-        if ((cur_element_type!=2)||(prev_element_type!=2)) {
+        if ((cur_element_type == 0)||(prev_element_type == 0)) {
             return false;
         }
         prev_element_type = cur_element_type;
