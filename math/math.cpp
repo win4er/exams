@@ -94,7 +94,7 @@ Math::Math() {}
 
 Math::~Math() {}
 
-int Math::check_is_branch(char element) {
+int Math::check_is_branch(const char& element) {
     const char* opening_br = "({[<";
     const char* closing_br = ")}]>";
     int length = 5;
@@ -113,7 +113,7 @@ int Math::check_is_branch(char element) {
     return 0;
 }
 
-int Math::check_is_sign(char element) {
+int Math::check_is_sign(const char& element) {
     const char* signs = "+-*/^ ";
     int length = 6;
     for (int iter = 0; iter < length; ++iter) {
@@ -124,7 +124,7 @@ int Math::check_is_sign(char element) {
     return 0;
 }
 
-bool Math::check_is_digit(char element) {
+bool Math::check_is_digit(const char& element) {
     const char* digits = "0123456789";
     int length = 10;
     for (int iter = 0; iter < length; ++iter) {
@@ -255,6 +255,28 @@ int Math::element_type(const char& element) {
     return 0; //x or func_name
 }
 
+bool Math::check_is_const_expr(const std::string& expression) {
+    int cur_element_type = 0;
+    int prev_element_type = 0;
+    for (int iter=0; iter<expression.size(); ++iter) {
+        cur_element_type = element_type(expression[iter]);
+        printf("%d\n", cur_element_type);
+        if (iter==0) {
+            if (cur_element_type == 2) {
+                prev_element_type = cur_element_type;
+                continue;
+            } else {
+                return false;
+            }
+        }
+        if ((cur_element_type!=2)||(prev_element_type!=2)) {
+            return false;
+        }
+        prev_element_type = cur_element_type;
+    }
+    return true;
+}
+
 bool Math::expression_type_data(const std::string& expression, int* expression_type_data) {
     assert(check_br_in_expr(expression));
     //code: 0 - func , 1 - degree, 2 - arg, 3 - sign_separator
@@ -266,9 +288,6 @@ bool Math::expression_type_data(const std::string& expression, int* expression_t
     int branch = 0; // opened, none, closed
     int digit = 0; // 0 - not digit, 1..10 - ok
     int sign = 0; // true false
-
-    int start = 0;
-    int end = 0;
 
     int cur_element_type = -1;
     int prev_element_type = -1;
@@ -503,18 +522,18 @@ bool Math::expression(const std::string& expression, Func_Data* data) {
                 int branch_2 = check_is_branch(expression[end]);
                 int info_type = expr_code_type[start];
                 std::string info;
-                if ((branch_1 == -1) && (branch_2 == 1)) {
-                    info = expression.substr(start+1, end-1-(start+1)+1);
-                } else {
-                    info = expression.substr(start, end-start+1);
-                }
                 if ((expr_code_type[iter] == 0)&&(expr_code_type[iter-1] == 3)) {
+                    start = iter;
                     func_count += 1;
                     std::string sign_info;
                     sign_info = expression.substr(iter-1, 1);
                     data->insert_data(sign_info, 3, func_count-1);
-                    std::string info = expression.substr(iter, 1);
                     info_type = expr_code_type[iter];
+                }
+                if ((branch_1 == -1) && (branch_2 == 1)) {
+                    info = expression.substr(start+1, end-1-(start+1)+1);
+                } else {
+                    info = expression.substr(start, end-start+1);
                 }
                 data->insert_data(info, info_type, func_count-1);
                 //printf("[%d][%d]%s\n", func_count-1, info_type, info.c_str());
@@ -571,6 +590,7 @@ bool Math::expression(const std::string& expression, Func_Data* data) {
     return true;
 }
 
-std::string Math::derivative(std::string s) {
-    return std::string {s};
+bool Math::derivative(Func_Data* input, Func_Data *output) {
+    
+    return true;
 }
