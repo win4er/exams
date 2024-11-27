@@ -278,209 +278,147 @@ bool Math::check_is_const_expr(const std::string& expression) {
 
 bool Math::expression_type_data(const std::string& expression, int* expression_type_data) {
     assert(check_br_in_expr(expression));
-    //code: 0 - func , 1 - degree, 2 - arg, 3 - sign_separator
-    int prev_expr_type = -1;
-    int cur_expr_type = -1;
-    bool cur_branch_expr_status = false;
-    bool prev_branch_expr_status = false;
-
-    int branch = 0; // opened, none, closed
-    int digit = 0; // 0 - not digit, 1..10 - ok
-    int sign = 0; // true false
-
-    int cur_element_type = -1;
-    int prev_element_type = -1;
-
-    int func_expr_count = 0;
-
-    for (int iter = 0; iter < expression.size(); ++iter) {
+    int cur_element_type = 0;
+    int prev_element_type = 0;
+    int cur_expr_type = 0;
+    int branch_count = 0;
+    const int expr_length = expression.size();
+    for (int iter=0; iter<expr_length; ++iter) {
         cur_element_type = element_type(expression[iter]);
-
-        if (iter == 0) {
-            switch (cur_element_type) {
-                case (0): { // func_expr_handler
-                    cur_expr_type = 0;
-                    prev_expr_type = 3; // idea? 3.....3......3, separator of func_expr
-                    cur_branch_expr_status = false;
-                    break;
-                }
-                case (1): { // sign_expr_handler
-                    cur_expr_type = 3;
-                    cur_branch_expr_status = false;
-                    sign = check_is_sign(expression[iter]);
-                    if ((sign > 2) && (sign != 6)) {
-                        printf("\nYou cant start an exception using %c\n", expression[iter]);
-                        return false;
-                    }
-                    break;
-                }
-                case (2): { // digit_expr_handler
-                    cur_expr_type = 0;
-                    cur_branch_expr_status = false;
-                    break;
-                }
-                case (3): { // branch_expr_handler
-                    branch = check_is_branch(expression[iter]);
-                    if (branch == -1) {
+        if ((iter == 0)||(iter == (expr_length-1))) {
+            if ((iter == 0) && (iter == (expr_length-1))) {
+                cur_expr_type = 0;
+            } else if (iter == 0) {
+                switch (cur_element_type) {
+                    case (0): {
                         cur_expr_type = 0;
-                        cur_branch_expr_status = true;
-                    } else {
-                        printf("\nYou cant start an expression using %c\n", expression[iter]);
-                        return false;
+                        break;    
                     }
-                    break;
+                    case (1): {
+                        cur_expr_type = 3;
+                        break;    
+                    }
+                    case (2): {
+                        cur_expr_type = 0;
+                        break;    
+                    }
+                    case (3): {
+                        cur_expr_type = 0;
+                        branch_count += check_is_branch(expression[iter]);
+                        break;
+                    }
+                }
+            } else if (iter == (expr_length-1)) {
+                if (branch_count) {
+                    cur_expr_type = expression_type_data[iter-1];
+                    branch_count += check_is_branch(expression[iter]);
+                    if (branch_count) {
+                        printf("Wrong expression\n");
+                        return false; 
+                    }
+                } else {
+                    switch (cur_element_type) {
+                        case (0): {
+                            if (prev_element_type == 1) {
+                                int sign = check_is_sign(expression[iter-1]);
+                                if (sign == 5) {
+                                    cur_expr_type = 1;
+                                } else {
+                                    cur_expr_type = 0;
+                                }
+                            } else {
+                                cur_expr_type = expression_type_data[iter-1];
+                            }
+                            break;
+                        }
+                        case (1): {
+                            printf("You cant use '%c' sign at the end of expression\n", expression[iter]);
+                            return false;
+                            break;    
+                        }
+                        case (2): {
+                            if (prev_element_type == 1) {
+                                int sign = check_is_sign(expression[iter-1]);
+                                if (sign == 5) {
+                                    cur_expr_type = 1;
+                                } else {
+                                    cur_expr_type = 0;
+                                }
+                            } else {
+                                cur_expr_type = expression_type_data[iter-1];
+                            }
+                            break;    
+                        }
+                        case (3): {
+                            printf("Wrong expression, last element is '%c'", expression[iter]);
+                            return false;
+                            break;    
+                        }
+                    }   
                 }
             }
-        } else if ((iter != 0) && (iter != (expression.size()-1))) {
-            switch (cur_element_type) {
-                case (0): { // func_element_expr_handler
-                    cur_branch_expr_status = prev_branch_expr_status;
-                    if (prev_expr_type == 3) {
-                        cur_expr_type = 0;
-                    } else {
-                        cur_expr_type = prev_expr_type;
-                    }
-                    break;
-                }
-                case (1): { // sign_element_expr_handler
-                    func_expr_count += 1;
-                    sign = check_is_sign(expression[iter]);
-                    cur_branch_expr_status = false;
-                    if (prev_branch_expr_status) {
-                        if (prev_element_type == 3) {
-                            branch = check_is_branch(expression[iter-1]);
-                            if (branch == 1) {
-                                cur_branch_expr_status = false;
-                                cur_expr_type = 3;
-                            } else {
-                                cur_branch_expr_status = true;
-                                cur_expr_type = prev_expr_type;
-                            }
-                        } else {
-                            cur_branch_expr_status = true;
-                            cur_expr_type = prev_expr_type;   
-                        }
-                    } else {
-                        cur_expr_type = 3;
-                    }
-                    break;
-                }
-                case (2): { // digit_expr_handler
-                    if (cur_branch_expr_status) {
-                        cur_expr_type = prev_expr_type;
-                    } else {
-                        if (prev_expr_type == 3) {
-                            sign = check_is_sign(expression[iter-1]);
+        } else if ((iter != 0) && (iter != (expr_length-1))) {
+            if (branch_count) {
+                cur_expr_type = expression_type_data[iter-1];
+                branch_count += check_is_branch(expression[iter]);
+            } else {
+                switch (cur_element_type) {
+                    case (0): {
+                        if (prev_element_type == 1) {
+                            int sign = check_is_sign(expression[iter-1]);
                             if (sign == 5) {
                                 cur_expr_type = 1;
                             } else {
                                 cur_expr_type = 0;
                             }
+                        } else {
+                            cur_expr_type = expression_type_data[iter-1];
                         }
-                    }
-                    break;
-                }
-                case (3): { // branch_expr_handler
-                    branch = check_is_branch(expression[iter]);
-                    cur_branch_expr_status = true;
-                    switch (branch) {
-                        case (-1): { // opening branch
-                            switch (prev_expr_type) {
-                                case (0): { // func_expr_handler
-                                    cur_expr_type = 2;
-                                    break;
-                                }
-                                case (1): { // degree_expr_handler
-                                    cur_expr_type = 2;
-                                    break;
-                                }
-                                case (2): { // arg_expr_handler
-                                    printf("\nFound branch expression in breanch expression at '%d' position(counts from 1)\n", iter+1); // recursive call?
-                                    return false;
-                                    break;
-                                }
-                                case (3): { // sign_separator_handler
-                                    sign = check_is_sign(expression[iter-1]);
-                                    if (sign == 5) {
-                                        cur_expr_type = 1;
-                                    } else {
-                                        cur_expr_type = 0;
-                                    }
-                                    break;
-                                }
-                                
-                            }
-                            break;
-                        }
-                        case (1): { // closing branch
-                            switch (prev_expr_type) { // func_expr_handler
-                                case (0): {
-                                    break;
-                                }
-                                case (1): { // degree_expr_handler
-                                    break;
-                                }
-                                case (2): { // arg_expr_handler
-                                    break;
-                                }
-                                case (3): { // sign_separator_handler
-                                    printf("\nFound sign '%c' before closing branch '%c', without func_expr after sign\n", expression[iter-1], expression[iter]);
-                                    return false;
-                                    break;
-                                }
-                            }
-                            break;
-                        }
-                    }
-                    break;
-                }
-            }
-        } else if (iter == (expression.size()-1)) {
-            if (prev_expr_type == 3) {
-                if (sign == 5) {
-                    cur_expr_type = 1;
-                } else {
-                    cur_expr_type = 0;
-                }
-            } else {
-                cur_expr_type = prev_expr_type;
-            }
-            switch (cur_element_type) {
-                case (0): { // func_name_expr_handler
-                    break;
-                }
-                case (1): { // sign_expr_handler
-                    printf("\nSeems wrong last symbols is '%c'\n", expression[iter]);
-                    break;
-                }
-                case (2): { // digit_expr_handler
-                    if (cur_branch_expr_status) {
-                        printf("\nBranch is still open, but its the end of expression\n");
                         break;
                     }
-                    break;
-                }
-                case (3): { // branch_expr_handler
-                    branch = check_is_branch(expression[iter]);
-                    if (branch == -1) {
-                        printf("\nYou cant use opening branch '%c' at the end of expr\n", expression[iter]);
-                        return false;
-                    } else if (branch == 1) {
-                        if (prev_branch_expr_status) {
-                            cur_branch_expr_status = true;
-                            cur_expr_type = prev_expr_type;
-                        } else {
-                            cur_branch_expr_status = false;
-                        }
+                    case (1): {
+                        cur_expr_type = 3;
+                        break;    
                     }
-                    break;
-                }
+                    case (2): {
+                        if (prev_element_type == 1) {
+                            int sign = check_is_sign(expression[iter-1]);
+                            if (sign == 5) {
+                                cur_expr_type = 1;
+                            } else {
+                                cur_expr_type = 0;
+                            }
+                        } else {
+                            cur_expr_type = expression_type_data[iter-1];
+                        }
+                        break;    
+                    }
+                    case (3): {
+                        int branch = check_is_branch(expression[iter]);
+                        if (branch == 1) {
+                            printf("Part of expression started with closing branch '%c'", expression[iter]);
+                            return false;
+                        } else {
+                            int prev_expr_type = expression_type_data[iter-1];
+                            if (prev_expr_type == 3) {
+                                int sign = check_is_sign(expression[iter-1]);
+                                if (sign == 5) {
+                                    cur_expr_type = 1;
+                                } else {
+                                    cur_expr_type = 0;
+                                }
+                            } else if ((prev_expr_type == 0)||(prev_expr_type == 1)) {
+                                cur_expr_type = 2;
+                            }
+                        }
+                        branch_count += check_is_branch(expression[iter]);
+                        break;    
+                    }
+                }   
             }
         }
-        prev_element_type = cur_element_type;
-        prev_expr_type = cur_expr_type;
-        prev_branch_expr_status = cur_branch_expr_status;
         expression_type_data[iter] = cur_expr_type;
+        prev_element_type = cur_element_type;
     }
     return true;
 }
@@ -589,7 +527,9 @@ bool Math::expression(const std::string& expression, Func_Data* data) {
     return true;
 }
 
-bool Math::derivative(Func_Data* input, Func_Data *output) {
-    
+bool Math::derivative(Func_Data *input, Func_Data *output) {
+    for (int iter=0; iter<input->count; ++iter) {
+        
+    }
     return true;
 }
