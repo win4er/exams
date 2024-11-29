@@ -553,3 +553,23 @@ bool Math::derivative(Func_Data *input) {
     }
     return true;
 }
+
+bool Math::stupid_derivative(Func_Data *input, Func_Data *output) {
+    assert(input->count==1);
+    int sign = check_is_sign((input->operations[0])[0]); //last (...)[0] has char type
+    assert(sign<3);
+    std::string degree_deriv_expr = "(" + input->degree_expr[0] + "-1)";
+    std::string func_deriv_expr = "";
+    std::string sign_deriv_expr = "";
+    std::string inp_func_expr = input->func_expr[0];
+    if (inp_func_expr == "cos") {
+        func_deriv_expr = "sin";
+        sign_deriv_expr = "-";
+    } else if (inp_func_expr == "sin") {
+        func_deriv_expr = "cos";
+        sign_deriv_expr = "+";
+    } //and others
+    std::string func_param_expr = input->param_expr[0];
+    std::string deriv_param_expr;
+    return true;
+}

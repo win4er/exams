@@ -14,5 +14,10 @@ int main() {
     Func_Data obj;
     handler.expression(expression, &obj);
     obj.show();
+    Func_Data f_data;
+    std::string expr = "cos(x)";
+    handler.expression(expr, &f_data);
+    Func_Data out_data;
+    handler.stupid_derivative(&f_data, &out_data);
     return 0;
 }

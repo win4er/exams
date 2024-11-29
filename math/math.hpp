@@ -39,6 +39,7 @@ class Math {
         //all non math funcs should be private later
         bool sub_derivative(Func_Data *input, Func_Data *output, int index);
         bool derivative(Func_Data *input);
+        bool stupid_derivative(Func_Data *input, Func_Data *output);
         
 };
 
