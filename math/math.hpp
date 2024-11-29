@@ -17,6 +17,7 @@ struct Func_Data {
         Func_Data();
         ~Func_Data();
         bool insert_data(const std::string& expr, int info_type, int index); //info_type 0 - f_expr, 1 - d_expr, 2 - p_expr, 3 - operation
+        bool show();
 };
 
 class Math {
@@ -36,7 +37,9 @@ class Math {
         bool expression_type_data(const std::string& expression, int* expression_type_data);
         bool expression(const std::string& expression, Func_Data *data);
         //all non math funcs should be private later
-        bool derivative(Func_Data *input, Func_Data *output);
+        bool sub_derivative(Func_Data *input, Func_Data *output, int index);
+        bool derivative(Func_Data *input);
+        
 };
 
 

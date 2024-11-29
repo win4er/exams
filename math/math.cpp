@@ -90,6 +90,21 @@ bool Func_Data::insert_data(const std::string& expression, int info_type, int in
     return true;
 }
 
+bool Func_Data::show() {
+    if (count > 0) {
+        printf("[operation][func_name][degree][param]\n");
+        for (int i=0; i<count; ++i) {
+            printf("%s\t", operations[i].c_str());
+            printf("%s\t", func_expr[i].c_str());
+            printf("%s\t", degree_expr[i].c_str());
+            printf("%s\t\n", param_expr[i].c_str());
+        }
+        return true;
+    }
+    printf("Data is empty!\n");
+    return false;
+}
+
 Math::Math() {}
 
 Math::~Math() {}
@@ -527,8 +542,13 @@ bool Math::expression(const std::string& expression, Func_Data* data) {
     return true;
 }
 
-bool Math::derivative(Func_Data *input, Func_Data *output) {
-    for (int iter=0; iter<input->count; ++iter) {
+bool Math::sub_derivative(Func_Data *input, Func_Data *output, int type) {
+    
+    return true;
+}
+
+bool Math::derivative(Func_Data *input) {
+    for (int iter=0; iter < input->count; ++iter) {
         
     }
     return true;
