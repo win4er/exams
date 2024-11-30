@@ -35,11 +35,12 @@ class Math {
         int element_type(const char& element);
         bool check_is_const_expr(const std::string& expr);
         bool expression_type_data(const std::string& expression, int* expression_type_data);
+        bool show_expression_type_data(const std::string& expression);
         bool expression(const std::string& expression, Func_Data *data);
         //all non math funcs should be private later
         bool sub_derivative(Func_Data *input, Func_Data *output, int index);
         bool derivative(Func_Data *input);
-        bool stupid_derivative(Func_Data *input, Func_Data *output);
+        std::string stupid_derivative(std::string& input);
         
 };
 

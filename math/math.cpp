@@ -365,7 +365,7 @@ bool Math::expression_type_data(const std::string& expression, int* expression_t
                             break;    
                         }
                         case (3): {
-                            printf("Wrong expression, last element is '%c'", expression[iter]);
+                            printf("Wrong expression, last element is '%c'\n", expression[iter]);
                             return false;
                             break;    
                         }
@@ -411,7 +411,7 @@ bool Math::expression_type_data(const std::string& expression, int* expression_t
                     case (3): {
                         int branch = check_is_branch(expression[iter]);
                         if (branch == 1) {
-                            printf("Part of expression started with closing branch '%c'", expression[iter]);
+                            printf("Part of expression started with closing branch '%c'\n", expression[iter]);
                             return false;
                         } else {
                             int prev_expr_type = expression_type_data[iter-1];
@@ -438,7 +438,19 @@ bool Math::expression_type_data(const std::string& expression, int* expression_t
     return true;
 }
 
+bool Math::show_expression_type_data(const std::string& expression) {
+    int* expr_data = new int[expression.size()];
+    expression_type_data(expression, expr_data);
+    for (int iter=0; iter<expression.size(); ++iter) {
+        printf("%d", expr_data[iter]);
+    }
+    printf("\n");
+    delete [] expr_data;
+    return true;
+}
+
 bool Math::expression(const std::string& expression, Func_Data* data) {
+    //TODO: fix inserting sign_data if it doesnt stated
     assert(check_br_in_expr(expression));
     int* expr_code_type = new int[expression.size()];
     expression_type_data(expression, expr_code_type);
@@ -465,22 +477,39 @@ bool Math::expression(const std::string& expression, Func_Data* data) {
                 start = iter;
                 end = iter;
                 func_count = 1;
+                int info_type = expr_code_type[iter];
                 std::string sign_info;
-                sign_info = "+";
-                data->insert_data(sign_info, 3, func_count-1);                  
+                if (info_type == 0) {
+                    sign_info = "+";
+                    data->insert_data(sign_info, info_type, func_count-1);
+                } else if (info_type == 3) {
+                    int sign_type = check_is_digit(expression[iter]);
+                    if (sign_type < 3) {
+                        sign_info = expression[iter];
+                        data->insert_data(sign_info, info_type, func_count-1);
+                    } else {
+                        printf("Expressin cant be started by '%s'", expression[iter]);
+                        return false;
+                    }
+                }
+                                  
             } else if (iter == (size-1)) {
                 end = iter;
                 int branch_1 = check_is_branch(expression[start]);
                 int branch_2 = check_is_branch(expression[end]);
                 int info_type = expr_code_type[start];
                 std::string info;
-                if ((expr_code_type[iter] == 0)&&(expr_code_type[iter-1] == 3)) {
-                    start = iter;
-                    func_count += 1;
-                    std::string sign_info;
-                    sign_info = expression.substr(iter-1, 1);
-                    data->insert_data(sign_info, 3, func_count-1);
-                    info_type = expr_code_type[iter];
+                if (expr_code_type[iter]!=expr_code_type[iter-1]) {
+                    if (expr_code_type[iter-1] == 3) { 
+                        start = iter;
+                        info_type = expr_code_type[start];
+                        if (expr_code_type[iter] == 0) {
+                            func_count += 1;
+                            std::string sign_info;
+                            sign_info = expression.substr(iter-1, 1);
+                            data->insert_data(sign_info, 3, func_count-1);
+                        }
+                    }
                 }
                 if ((branch_1 == -1) && (branch_2 == 1)) {
                     info = expression.substr(start+1, end-1-(start+1)+1);
@@ -503,6 +532,7 @@ bool Math::expression(const std::string& expression, Func_Data* data) {
                         data->insert_data(sign_info, 3, func_count-1);                       
                     }
                 } else if (expr_code_type[iter] == 3) {
+                    end = iter-1;
                     int branch_1 = check_is_branch(expression[start]);
                     int branch_2 = check_is_branch(expression[end]);
                     int info_type = expr_code_type[start];
@@ -554,22 +584,85 @@ bool Math::derivative(Func_Data *input) {
     return true;
 }
 
-bool Math::stupid_derivative(Func_Data *input, Func_Data *output) {
-    assert(input->count==1);
-    int sign = check_is_sign((input->operations[0])[0]); //last (...)[0] has char type
-    assert(sign<3);
-    std::string degree_deriv_expr = "(" + input->degree_expr[0] + "-1)";
-    std::string func_deriv_expr = "";
-    std::string sign_deriv_expr = "";
-    std::string inp_func_expr = input->func_expr[0];
-    if (inp_func_expr == "cos") {
-        func_deriv_expr = "sin";
-        sign_deriv_expr = "-";
-    } else if (inp_func_expr == "sin") {
-        func_deriv_expr = "cos";
-        sign_deriv_expr = "+";
-    } //and others
-    std::string func_param_expr = input->param_expr[0];
-    std::string deriv_param_expr;
-    return true;
+std::string Math::stupid_derivative(std::string& input) {
+    std::string good_input = input;
+    // if ((check_is_branch(input[0])==-1) && (check_is_branch(input[input.size()-1])==1)) {
+    //     int start = 1, end = input.size()-1-1;
+    //     good_input = input.substr(start, end-start+1);
+    // }
+    Func_Data expr_data;
+    expr_data.show();
+    expression(good_input, &expr_data);
+    
+    std::string output_expr = "";
+    if (expr_data.count == 1) {
+        std::string input_sign = expr_data.operations[0];
+        std::string input_func_name = expr_data.func_expr[0];
+        std::string input_degree = expr_data.degree_expr[0];
+        std::string input_param = expr_data.param_expr[0];
+        
+        std::string output_sign = "";
+        std::string additional_expr = "";
+        std::string output_func_name = "";
+        std::string output_degree = "";
+        std::string output_param = input_param;
+        
+        if ((check_is_branch(input_func_name[0])==-1) && (check_is_branch(input_func_name[0])==1)) {
+            int start = 1, end = input_func_name.size()-1-1;
+            input_func_name = input_func_name.substr(start, end-start+1);
+        }
+
+        if ((check_is_branch(input_degree[0])==-1) && (check_is_branch(input_degree[0])==1)) {
+            int start = 1, end = input_degree.size()-1-1;
+            input_degree = input_degree.substr(start, end-start+1);
+        }
+
+        Func_Data func_name_data;
+        expression(input_func_name, &func_name_data);
+
+        Func_Data degree_data;
+        expression(input_degree, &degree_data);
+
+        if (func_name_data.count == 1) {        
+            if (degree_data.count == 1) {
+                if (input_func_name == "cos") {
+                    output_sign = "-";
+                    output_func_name = "sin";
+                } else if (input_func_name == "sin") {
+                    output_sign = input_sign;
+                    output_func_name = "sin";
+                } else {
+                    output_func_name = input_func_name;
+                }
+                
+                additional_expr = input_degree;
+                if (check_is_const_expr(input_degree)) {
+                    output_degree = std::to_string(std::stoi(input_degree)-1);
+                } else {
+                    output_degree = "(" + input_degree + "-1)";
+                }
+                output_expr = output_sign + additional_expr + "*" + output_func_name + "^" + output_degree;
+            } else {
+                printf("Proccessing hard degree: {%s}\n", input_degree.c_str());
+
+                for (int iter=0; iter<degree_data.count; ++iter) {
+                    output_expr += degree_data.operations[iter];
+                    output_expr += stupid_derivative(degree_data.func_expr[iter]);   
+                }
+            }
+        } else {
+            printf("Proccessing hard func_name: {%s}\n", input_func_name.c_str());
+            for (int iter=0; iter<func_name_data.count; ++iter) {
+                output_expr += func_name_data.operations[iter];
+                output_expr += stupid_derivative(func_name_data.func_expr[iter]);
+            }
+        }
+    } else {
+        printf("Processing multiple func expr {%s}\n", good_input.c_str());
+        for (int iter=0; iter<expr_data.count; ++iter) {
+            output_expr += expr_data.operations[iter];
+            output_expr += stupid_derivative(expr_data.func_expr[iter]);
+        }
+    }
+    return output_expr;
 }
