@@ -577,10 +577,11 @@ std::string Math::make_it_branched(const std::string& expr) {
 }
 
 std::string Math::make_it_unbranched(const std::string& expr) {
-    assert((check_is_branch(expr[0])==-1) && (check_is_branch(expr[expr.size()-1])==1));
-    int start = 1;
-    int end = expr.size()-1-1;
-    return expr.substr(start, end-start+1);
+    if ((check_is_branch(expr[0])==-1) && (check_is_branch(expr[expr.size()-1])==1)) {
+        int start = 1;
+        int end = expr.size()-1-1;
+        return expr.substr(start,end-start+1);
+    } else {return expr;}
 }
 
 bool Math::sub_derivative(Func_Data *input, Func_Data *output, int type) {
