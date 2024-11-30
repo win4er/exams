@@ -92,12 +92,12 @@ bool Func_Data::insert_data(const std::string& expression, int info_type, int in
 
 bool Func_Data::show() {
     if (count > 0) {
-        printf("[operation][func_name][degree][param]\n");
         for (int i=0; i<count; ++i) {
-            printf("%s\t", operations[i].c_str());
-            printf("%s\t", func_expr[i].c_str());
-            printf("%s\t", degree_expr[i].c_str());
-            printf("%s\t\n", param_expr[i].c_str());
+            printf("Func #%d\n", i+1);
+            printf("[operation]: {%s}\n", operations[i].c_str());
+            printf("[func_name]: {%s}\n", func_expr[i].c_str());
+            printf("[degree]: {%s}\n", degree_expr[i].c_str());
+            printf("[param]: {%s}\n", param_expr[i].c_str());
         }
         return true;
     }
@@ -598,13 +598,9 @@ bool Math::derivative(Func_Data *input) {
 
 std::string Math::stupid_derivative(std::string& input) {
     std::string good_input = input;
-    // if ((check_is_branch(input[0])==-1) && (check_is_branch(input[input.size()-1])==1)) {
-    //     int start = 1, end = input.size()-1-1;
-    //     good_input = input.substr(start, end-start+1);
-    // }
     Func_Data expr_data;
-    expr_data.show();
     expression(good_input, &expr_data);
+    expr_data.show();
     
     std::string output_expr = "";
     if (expr_data.count == 1) {
@@ -614,20 +610,13 @@ std::string Math::stupid_derivative(std::string& input) {
         std::string input_param = expr_data.param_expr[0];
         
         std::string output_sign = "";
-        std::string additional_expr = "";
         std::string output_func_name = "";
         std::string output_degree = "";
         std::string output_param = input_param;
         
-        if ((check_is_branch(input_func_name[0])==-1) && (check_is_branch(input_func_name[0])==1)) {
-            int start = 1, end = input_func_name.size()-1-1;
-            input_func_name = input_func_name.substr(start, end-start+1);
-        }
+        make_it_unbranched(input_func_name);
 
-        if ((check_is_branch(input_degree[0])==-1) && (check_is_branch(input_degree[0])==1)) {
-            int start = 1, end = input_degree.size()-1-1;
-            input_degree = input_degree.substr(start, end-start+1);
-        }
+        make_it_unbranched(input_degree);
 
         Func_Data func_name_data;
         expression(input_func_name, &func_name_data);
@@ -647,30 +636,34 @@ std::string Math::stupid_derivative(std::string& input) {
                     output_func_name = input_func_name;
                 }
                 
-                additional_expr = input_degree;
                 if (check_is_const_expr(input_degree)) {
                     output_degree = std::to_string(std::stoi(input_degree)-1);
                 } else {
                     output_degree = "(" + input_degree + "-1)";
                 }
-                output_expr = output_sign + additional_expr + "*" + output_func_name + "^" + output_degree;
             } else {
                 printf("Proccessing hard degree: {%s}\n", input_degree.c_str());
-
+                output_degree += "(";
                 for (int iter=0; iter<degree_data.count; ++iter) {
-                    output_expr += degree_data.operations[iter];
-                    output_expr += stupid_derivative(degree_data.func_expr[iter]);   
+                    output_degree += degree_data.operations[iter];
+                    output_degree += stupid_derivative(degree_data.func_expr[iter]);   
                 }
+                output_degree += "-1)";
             }
         } else {
             printf("Proccessing hard func_name: {%s}\n", input_func_name.c_str());
+            output_func_name = "(";
             for (int iter=0; iter<func_name_data.count; ++iter) {
-                output_expr += func_name_data.operations[iter];
-                output_expr += stupid_derivative(func_name_data.func_expr[iter]);
+                output_func_name += func_name_data.operations[iter];
+                output_func_name += "(";
+                output_func_name += stupid_derivative(func_name_data.func_expr[iter]);
+                output_func_name += ")";
             }
+            output_func_name += ")";
         }
+        output_expr = "(" + output_sign + ")" + input_degree + ")*" + output_func_name + "^" + output_degree;
     } else {
-        printf("Processing multiple func expr {%s}\n", good_input.c_str());
+        //printf("Processing multiple func expr {%s}\n", good_input.c_str());
         for (int iter=0; iter<expr_data.count; ++iter) {
             output_expr += expr_data.operations[iter];
             output_expr += stupid_derivative(expr_data.func_expr[iter]);
