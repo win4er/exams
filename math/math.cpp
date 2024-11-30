@@ -572,6 +572,17 @@ bool Math::expression(const std::string& expression, Func_Data* data) {
     return true;
 }
 
+std::string Math::make_it_branched(const std::string& expr) {
+    return "(" + expr + ")";
+}
+
+std::string Math::make_it_unbranched(const std::string& expr) {
+    assert((check_is_branch(expr[0])==-1) && (check_is_branch(expr[expr.size()-1])==1));
+    int start = 1;
+    int end = expr.size()-1-1;
+    return expr.substr(start, end-start+1);
+}
+
 bool Math::sub_derivative(Func_Data *input, Func_Data *output, int type) {
     
     return true;

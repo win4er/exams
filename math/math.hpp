@@ -37,6 +37,8 @@ class Math {
         bool expression_type_data(const std::string& expression, int* expression_type_data);
         bool show_expression_type_data(const std::string& expression);
         bool expression(const std::string& expression, Func_Data *data);
+        std::string make_it_branched(const std::string& expr);
+        std::string make_it_unbranched(const std::string& expr);
         //all non math funcs should be private later
         bool sub_derivative(Func_Data *input, Func_Data *output, int index);
         bool derivative(Func_Data *input);
