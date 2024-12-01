@@ -4,11 +4,10 @@
 int main() {
     Math handler;
     Func_Data out_data;
-    std::string expr = "(x+3+2)^2";
+    std::string expr = "(x+1)^3";
     handler.expression(expr, &out_data);
-    std::cout << expr << std::endl;
-    handler.show_expression_type_data(expr);
     out_data.show();
-    std::cout << handler.stupid_derivative(expr) << std::endl;
+    std::string result = handler.stupid_derivative(expr);
+    std::cout << result << std::endl;
     return 0;
 }
